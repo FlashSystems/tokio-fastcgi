@@ -1,0 +1,121 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in library 'tokio-fastcgi'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--lib",
+					"--package=tokio-fastcgi"
+				],
+				"filter": {
+					"name": "tokio-fastcgi",
+					"kind": "lib"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug example 'simple'",
+			"cargo": {
+				"args": [
+					"build",
+					"--example=simple",
+					"--package=tokio-fastcgi"
+				],
+				"filter": {
+					"name": "simple",
+					"kind": "example"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in example 'simple'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--example=simple",
+					"--package=tokio-fastcgi"
+				],
+				"filter": {
+					"name": "simple",
+					"kind": "example"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug integration test 'integration'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--test=integration",
+					"--package=tokio-fastcgi"
+				],
+				"filter": {
+					"name": "integration",
+					"kind": "test"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug integration test 'server'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--test=server",
+					"--package=tokio-fastcgi"
+				],
+				"filter": {
+					"name": "server",
+					"kind": "test"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug integration test 'commons'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--test=commons",
+					"--package=tokio-fastcgi"
+				],
+				"filter": {
+					"name": "commons",
+					"kind": "test"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		}
+	]
+}
