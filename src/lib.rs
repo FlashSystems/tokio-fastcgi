@@ -441,8 +441,9 @@ impl Read for InStream {
 	///
 	/// *Beware*: Calling read or read_exact on a stream that is not done will panic!
 	fn read(&mut self, out: &mut [u8]) -> std::result::Result<usize, std::io::Error> {
-		let c = std::io::Read::read(&mut &self.data[self.read_pos.unwrap()..], out)?;
-		self.read_pos = Some(self.read_pos.unwrap() + c);
+		let read_pos = self.read_pos.unwrap();
+		let c = std::io::Read::read(&mut &self.data[read_pos..], out)?;
+		self.read_pos.insert(read_pos + c);
 		Ok(c)
 	}
 
@@ -450,8 +451,9 @@ impl Read for InStream {
 	///
 	/// *Beware*: Calling read or read_exact on a stream that is not done will panic!
 	fn read_exact(&mut self, out: &mut [u8]) -> std::result::Result<(), std::io::Error> {
-		std::io::Read::read_exact(&mut &self.data[self.read_pos.unwrap()..], out)?;
-		self.read_pos = Some(self.read_pos.unwrap() + out.len());
+		let read_pos = self.read_pos.unwrap();
+		std::io::Read::read_exact(&mut &self.data[read_pos..], out)?;
+		self.read_pos.insert(read_pos + out.len());
 		Ok(())
 	}
 }
