@@ -882,7 +882,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// }
 	/// # }
 	/// ```
-	pub async fn process<F: Future<Output = RequestResult>, C: Fn(Arc<Self>) -> F>(self, callback: C) -> Result<(), Error> {
+	pub async fn process<F: Future<Output = RequestResult>, C: FnOnce(Arc<Self>) -> F>(self, callback: C) -> Result<(), Error> {
 		let rc_self = Arc::from(self);
 
 		let result = callback(rc_self.clone()).await;
