@@ -443,7 +443,7 @@ impl Read for InStream {
 	fn read(&mut self, out: &mut [u8]) -> std::result::Result<usize, std::io::Error> {
 		let read_pos = self.read_pos.unwrap();
 		let c = std::io::Read::read(&mut &self.data[read_pos..], out)?;
-		self.read_pos.insert(read_pos + c);
+		self.read_pos = Some(read_pos + c);
 		Ok(c)
 	}
 
@@ -453,7 +453,7 @@ impl Read for InStream {
 	fn read_exact(&mut self, out: &mut [u8]) -> std::result::Result<(), std::io::Error> {
 		let read_pos = self.read_pos.unwrap();
 		std::io::Read::read_exact(&mut &self.data[read_pos..], out)?;
-		self.read_pos.insert(read_pos + out.len());
+		self.read_pos = Some(read_pos + out.len());
 		Ok(())
 	}
 }
