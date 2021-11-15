@@ -1238,7 +1238,7 @@ impl <W: AsyncWrite + Unpin> OutStream<W> {
 			// Transmit large streams in junks of 64k
 			const JUNK_SIZE: usize = (u16::max_value() - 1) as usize;
 			for offset in (0..data.len()).step_by(JUNK_SIZE) {
-				self.orw.write_data(self.record_type, &data[offset..(offset + JUNK_SIZE)]).await?;
+				self.orw.write_data(self.record_type, &data[offset..(offset + JUNK_SIZE).min(data.len())]).await?;
 			}
 
 			Ok(data.len())
