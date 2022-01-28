@@ -13,12 +13,12 @@ readme = "README.md"
 exclude = [ "*.code-workspace", ".vscode" ]
 
 [dependencies]
-tokio = { version = "1.7", features = ["rt", "io-util", "macros", "sync"] }
+tokio = { version = "1", features = ["rt", "io-util", "macros", "sync"] }
 log = "0.4"
 byteorder = "1.4"
 
 [dev-dependencies]
-tokio = { version = "1.7", features = ["test-util", "net", "rt-multi-thread"] }
+tokio = { version = "1", features = ["test-util", "net", "rt-multi-thread"] }
 tokio-test = "0.4"
 async-trait = "0.1"
 once_cell = "1.7"
