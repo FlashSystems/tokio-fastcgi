@@ -1,6 +1,4 @@
-//! This crate implements a FastCGI handler for Tokio. It supports all three
-//! FastCGI roles: Responder, Authorizer and Filter. The [`Role`] enum documents
-//! the different roles and their input and output parameters.
+#![doc = include_str!("../README.md")]
 use log::{trace, warn};
 use std::fmt::Debug;
 use std::marker::Unpin;
@@ -848,7 +846,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// contains all necessary information (input-/output-streams, parameters,
 	/// etc.) for processing the request.
 	///
-	/// For a complete example for using this function see [asfd](asdf).
+	/// See the examples directory for a complete example for using this function.
 	///
 	/// ## Callback function
 	///

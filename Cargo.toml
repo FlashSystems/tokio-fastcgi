@@ -1,9 +1,9 @@
 [package]
 name = "tokio-fastcgi"
-description = "FastCGI application (responder, authorizer, filter) library for Tokio"
+description = "FastCGI handler (responder, authorizer, filter) library for Tokio"
 license = "Apache-2.0"
-#keywords = [ "settings", "config", "configuration", "environment", "env" ]
-#categories = [ "config", "parsing" ]
+keywords = [ "protocol", "server", "cgi", "fastcgi", "web", "tokio", "async" ]
+categories = [ "web-programming", "network-programming", "asynchronous" ]
 version = "0.1.0"
 authors = ["Daniel Goß <developer@flashsystems.de>"]
 edition = "2018"
