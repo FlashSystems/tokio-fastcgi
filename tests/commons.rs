@@ -69,7 +69,7 @@ impl TestCase for TestParamsInOut {
 			.read(&create_record(RecordType::BeginRequest, 0x01, 0x09, &[ 0x00, RecordRole::Responder as u8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
 			.read(&create_record(RecordType::Params, 0x01, 0x06, b"\x0B\x02SERVER_PORT80\x04\x03TESTYES"))
 			.read(&create_record(RecordType::Params, 0x01, 0x00, &[]))
-			.read(&create_record(RecordType::StdIn, 0x01, 0x03, &(0..100u8).map(|x| x).collect::<Vec<u8>>()[..] ))	// Fill StdIn
+			.read(&create_record(RecordType::StdIn, 0x01, 0x03, &(0..100u8).collect::<Vec<u8>>()[..] ))	// Fill StdIn
 			.read(&create_record(RecordType::StdIn, 0x01, 0x03, &[]))
 			.build()
 	}
@@ -220,9 +220,9 @@ impl TestCase for TestAbortContinue {
 			/*Request 0*/.read(&create_record(RecordType::Params, 0x00, 0x00, &[]))
 			/*Request 1*/.read(&create_record(RecordType::Params, 0x01, 0x06, b"\x03\x01IDX1"))
 			/*Request 1*/.read(&create_record(RecordType::Params, 0x01, 0x00, &[]))
-			/*Request 1*/.read(&create_record(RecordType::StdIn, 0x01, 0x03, &(0..100u8).map(|x| x).collect::<Vec<u8>>()[..] ))	// Fill StdIn
+			/*Request 1*/.read(&create_record(RecordType::StdIn, 0x01, 0x03, &(0..100u8).collect::<Vec<u8>>()[..] ))	// Fill StdIn
 			/*Request 1 Abort*/.read(&create_record(RecordType::AbortRequest, 0x01, 0x00, &[]))
-			/*Request 0*/.read(&create_record(RecordType::StdIn, 0x00, 0x03, &(0..100u8).map(|x| x).collect::<Vec<u8>>()[..] ))	// Fill StdIn
+			/*Request 0*/.read(&create_record(RecordType::StdIn, 0x00, 0x03, &(0..100u8).collect::<Vec<u8>>()[..] ))	// Fill StdIn
 			/*Request 0*/.read(&create_record(RecordType::StdIn, 0x00, 0x03, &[]))
 			.build()
 	}
@@ -253,7 +253,7 @@ impl TestCase for TestUnknownRoleReturn {
 			.read(&create_record(RecordType::BeginRequest, 0x01, 0x09, &[ 0x00, RecordRole::Responder as u8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
 			.read(&create_record(RecordType::Params, 0x01, 0x06, b"\x0B\x02SERVER_PORT80\x04\x03TESTYES"))
 			.read(&create_record(RecordType::Params, 0x01, 0x00, &[]))
-			.read(&create_record(RecordType::StdIn, 0x01, 0x03, &(0..100u8).map(|x| x).collect::<Vec<u8>>()[..] ))	// Fill StdIn
+			.read(&create_record(RecordType::StdIn, 0x01, 0x03, &(0..100u8).collect::<Vec<u8>>()[..] ))	// Fill StdIn
 			.read(&create_record(RecordType::StdIn, 0x01, 0x03, &[]))
 			.build()
 	}
@@ -267,7 +267,7 @@ impl TestCase for TestUnknownRoleReturn {
 	}
 
 	async fn processor<W: AsyncWrite + Unpin + Send>(_request: Arc<Request<W>>) -> RequestResult {
-		RequestResult::UnkownRole
+		RequestResult::UnknownRole
 	}
 }
 
@@ -358,10 +358,10 @@ impl TestCase for TestKeepConnection {
 			/*Random Delay*/.wait(Duration::from_millis(100))
 			/*Request 1*/.read(&create_record(RecordType::Params, 0x01, 0x06, b"\x03\x01IDX2"))
 			/*Request 1*/.read(&create_record(RecordType::Params, 0x01, 0x00, &[]))
-			/*Request 1*/.read(&create_record(RecordType::StdIn, 0x01, 0x03, &(0..100u8).map(|x| x).collect::<Vec<u8>>()[..] ))	// Fill StdIn
+			/*Request 1*/.read(&create_record(RecordType::StdIn, 0x01, 0x03, &(0..100u8).collect::<Vec<u8>>()[..] ))	// Fill StdIn
 			/*Random Delay*/.wait(Duration::from_millis(100))
 			/*Request 1*/.read(&create_record(RecordType::StdIn, 0x01, 0x03, &[]))
-			/*Request 0*/.read(&create_record(RecordType::StdIn, 0x00, 0x03, &(0..100u8).map(|x| x).collect::<Vec<u8>>()[..] ))	// Fill StdIn
+			/*Request 0*/.read(&create_record(RecordType::StdIn, 0x00, 0x03, &(0..100u8).collect::<Vec<u8>>()[..] ))	// Fill StdIn
 			/*Request 0*/.read(&create_record(RecordType::StdIn, 0x00, 0x03, &[]))
 			.build()
 	}
@@ -388,6 +388,6 @@ impl TestCase for TestKeepConnection {
 
 		request.get_stdout().write(idx.as_bytes()).await.unwrap();
 		request.get_stderr().write(&[b'X', idx.as_bytes()[0] - b'1' + b'A']).await.unwrap();
-		RequestResult::Complete(0x11223344 * u32::from_str_radix(idx, 10).unwrap_or(0))
+		RequestResult::Complete(0x11223344 * idx.parse().unwrap_or(0))
 	}
 }

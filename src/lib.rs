@@ -1,4 +1,9 @@
+#![warn(missing_docs)]
 #![doc = include_str!("../README.md")]
+//! # Basic Example
+//! ```rust
+#![doc = include_str!("../examples/simple.rs")]
+//! ```
 use log::{trace, warn};
 use std::fmt::Debug;
 use std::marker::Unpin;
@@ -30,7 +35,7 @@ pub type OwnedInStream<'a> = MutexGuard<'a, InStream>;
 /// Error type for TryFrom on StdReqType and SysReqType
 #[derive(Debug)]
 enum TypeError {
-	UnkownRecordType(u8)
+	UnknownRecordType(u8)
 }
 
 /// Enum containing all request record types that can be handled by Request::Process.
@@ -56,7 +61,7 @@ impl TryFrom<u8> for StdReqType {
 			4 => Ok(Self::Params),
 			5 => Ok(Self::StdIn),
 			8 => Ok(Self::Data),
-			_ => Err(TypeError::UnkownRecordType(value))
+			_ => Err(TypeError::UnknownRecordType(value))
 		}
 	}
 }
@@ -94,7 +99,7 @@ impl TryFrom<u8> for SysReqType {
 		match value {
 			2 => Ok(Self::AbortRequest),
 			9 => Ok(Self::GetValues),
-			_ => Err(TypeError::UnkownRecordType(value))
+			_ => Err(TypeError::UnknownRecordType(value))
 		}
 	}
 }
@@ -103,7 +108,7 @@ impl TryFrom<u8> for SysReqType {
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum SysRespType {
 	GetValuesResult = 10,
-	UnkownType = 11
+	UnknownType = 11
 }
 
 impl From<SysRespType> for u8 {
@@ -145,68 +150,61 @@ type RequestType = Category<StdReqType, SysReqType>;
 /// Type for all known response record types
 type ResponseType = Category<StdRespType, SysRespType>;
 
-/// Enum containing the role hat is requestsed from the FastCGI client.
-///
-/// # Responder
-///
-/// A FastCGI responder receives all the information associated with an HTTP
-/// request and generates an HTTP response. A responder receives the following
-/// information from the webserver:
-///
-/// * Environment variables (see [`get_param`](Request::get_param)/[`get_str_param`](Request::get_str_param))
-/// * StdIn (see [`get_stdin`](Request::get_stdin))
-///
-/// A responder has the following communication channels at its disposal:
-/// * Result code (see [`RequestResult`])
-/// * StdOut (see [`get_stdout`](Request::get_stdout))
-/// * StdErr (see [`get_stderr`](Request::get_stderr))
-///
-/// see the [FastCGI specification](https://fastcgi-archives.github.io/FastCGI_Specification.html#S6.2) for more Information
-///
-/// # Authorizer
-///
-/// A FastCGI authorizer receives all the information associated with an HTTP
-/// request and generates an authorized/unauthorized decision. In case of an
-/// authorized decision the Authorizer can also associate name-value pairs with
-/// the HTTP request. A responder receives the following information from the
-/// webserver:
-///
-/// * Environment variables and request parameters (see
-///   [`get_param`](Request::get_param)/[`get_str_param`](Request::get_str_param))
-///
-/// An authorizer has the following communication channels at its disposal:
-///
-/// * Result code (see [`RequestResult`])
-/// * StdOut (see [`get_stdout`](Request::get_stdout))
-/// * StdErr (see [`get_stderr`](Request::get_stderr))
-///
-/// see the [FastCGI specification](https://fastcgi-archives.github.io/FastCGI_Specification.html#S6.3) for more Information
-///
-/// # Filter
-///
-/// A FastCGI filter receives all the information associated with an HTTP
-/// request, plus an extra stream of data from a file stored on the Web server,
-/// and generates a “filtered” version of the data stream as an HTTP response. A
-/// filter receives the following information from the webserver:
-///
-/// * Environment variables, reuqest parameters and additional information
-///   (`FCGI_DATA_LAST_MOD` and `FCGI_DATA_LENGTH`) (see
-///   [`get_param`](Request::get_param)/[`get_str_param`](Request::get_str_param))
-/// * StdIn (see [`get_stdin`](Request::get_stdin))
-/// * File Data from the Webserver (see [`get_data`](Request::get_data))
-///
-/// A filter has the following communication channels at its disposal:
-///
-/// * Result code (see [`RequestResult`])
-/// * StdOut (see [`get_stdout`](Request::get_stdout))
-/// * StdErr (see [`get_stderr`](Request::get_stderr))
-///
-/// see the [FastCGI specification](https://fastcgi-archives.github.io/FastCGI_Specification.html#S6.4) for more Information
-///
+/// Enum containing the role that is requested from the FastCGI client. See the different
+/// variants for a description of the roles and their input and output streams.
 #[derive(PartialEq, Debug)]
 pub enum Role {
+	/// A FastCGI responder receives all the information associated with an HTTP
+	/// request and generates an HTTP response. A responder receives the following
+	/// information from the web-server:
+	///
+	/// * Environment variables (see [`get_param`](Request::get_param)/[`get_str_param`](Request::get_str_param))
+	/// * StdIn (see [`get_stdin`](Request::get_stdin))
+	///
+	/// A responder has the following communication channels at its disposal:
+	/// * Result code (see [`RequestResult`])
+	/// * StdOut (see [`get_stdout`](Request::get_stdout))
+	/// * StdErr (see [`get_stderr`](Request::get_stderr))
+	///
+	/// see the [FastCGI specification](https://fastcgi-archives.github.io/FastCGI_Specification.html#S6.2) for more Information
 	Responder,
+
+	/// A FastCGI authorizer receives all the information associated with an HTTP
+	/// request and generates an authorized/unauthorized decision. In case of an
+	/// authorized decision the authorizer can also associate name-value pairs with
+	/// the HTTP request. A responder receives the following information from the
+	/// web-server:
+	///
+	/// * Environment variables and request parameters (see
+	///   [`get_param`](Request::get_param)/[`get_str_param`](Request::get_str_param))
+	///
+	/// An authorizer has the following communication channels at its disposal:
+	///
+	/// * Result code (see [`RequestResult`])
+	/// * StdOut (see [`get_stdout`](Request::get_stdout))
+	/// * StdErr (see [`get_stderr`](Request::get_stderr))
+	///
+	/// see the [FastCGI specification](https://fastcgi-archives.github.io/FastCGI_Specification.html#S6.3) for more Information
 	Authorizer,
+
+	/// A FastCGI filter receives all the information associated with an HTTP
+	/// request, plus an extra stream of data from a file stored on the Web server,
+	/// and generates a “filtered” version of the data stream as an HTTP response. A
+	/// filter receives the following information from the web-server:
+	///
+	/// * Environment variables, request parameters and additional information
+	///   (`FCGI_DATA_LAST_MOD` and `FCGI_DATA_LENGTH`) (see
+	///   [`get_param`](Request::get_param)/[`get_str_param`](Request::get_str_param))
+	/// * StdIn (see [`get_stdin`](Request::get_stdin))
+	/// * File Data from the web-server (see [`get_data`](Request::get_data))
+	///
+	/// A filter has the following communication channels at its disposal:
+	///
+	/// * Result code (see [`RequestResult`])
+	/// * StdOut (see [`get_stdout`](Request::get_stdout))
+	/// * StdErr (see [`get_stderr`](Request::get_stderr))
+	///
+	/// see the [FastCGI specification](https://fastcgi-archives.github.io/FastCGI_Specification.html#S6.4) for more Information
 	Filter
 }
 
@@ -242,9 +240,9 @@ pub enum RequestResult {
 	/// request is rejected.
 	Overloaded,
 	/// The application is not prepared to handle the role requested by the
-	/// webserver. For example if a FastCGI responder is called as a filter or an
+	/// web-server. For example if a FastCGI responder is called as a filter or an
 	/// authorizer.
-	UnkownRole
+	UnknownRole
 }
 
 impl RequestResult {
@@ -264,60 +262,44 @@ impl From<RequestResult> for u8 {
 		match rr {
 			RequestResult::Complete(_) => 0,
 			RequestResult::Overloaded => 2,
-			RequestResult::UnkownRole => 3
+			RequestResult::UnknownRole => 3
 		}
 	}
 }
 
-/// Errors that can be returned by calles to [`process`](Request::process).
-///
-/// ## StreamAlreadyDone
-///
-/// The input stream was already closed and can not be reused. This indicates
-/// an error within the call sequence, like calling `process` twice or the
-/// webserver sending more data after closing `StdIn` or `Data`.
-///
-/// ## StreamAlreadyClosed
-///
-/// `write` was called on an output stream that was already closed by a call to
-/// `close`.
-///
-/// ## SequenceError
-///
-/// The webserver violated the FastCGI specification. For example by sending a
-/// `StdIn` record before sending a `BeginRequest` record.
-///
-/// ## InvalidRecordVersion
-///
-/// The record version is not 1. This should never happen since the FastCGI
-/// specification does not define any other record versions.
-///
-/// ## InvalidRoleNumber
-///
-/// The webserver sent an unkown role number. This is most likely a bug in the
-/// FastCGI implementation of the webserver.
-///
-/// ## UnkownRecordType
-///
-/// This error is never be returned to the user of the library. It is internally
-/// handled by the `tokio-fastcgi` crate. The library returns a
-/// `FCGI_UNKNOWN_TYPE` record to the webserver.
-///
-/// ## IoError
-///
-/// An IoError occured. Most likely the connection to the webserver got lost or
-/// was interrupted. Some I/O errors are handled by `toko-fastcgi`. If the
-/// webserver closes the FastCGI connection after all requests have been
-/// processed no error is returned and the EOF error ist just swallowed.
-///
+/// Errors that can be returned by calls to [`process`](Request::process).
 #[derive(Debug)]
 pub enum Error {
+	/// The input stream was already closed and can not be reused. This indicates
+	/// an error within the call sequence, like calling `process` twice or the
+	/// web-server sending more data after closing `StdIn` or `Data`.
 	StreamAlreadyDone,
+
+	/// `write` was called on an output stream that was already closed by a call to
+	/// `close`.
 	StreamAlreadyClosed,
+
+	/// The web-server violated the FastCGI specification. For example by sending a
+	/// `StdIn` record before sending a `BeginRequest` record.
 	SequenceError,
+
+	/// The record version is not 1. This should never happen since the FastCGI
+	/// specification does not define any other record versions.
 	InvalidRecordVersion,
+
+	/// The web-server sent an unknown role number. This is most likely a bug in the
+	/// FastCGI implementation of the web-server.
 	InvalidRoleNumber,
-	UnkownRecordType(RequestId, u8),
+
+	/// This error is never returned to the user of the library. It is internally
+	/// handled by the `tokio-fastcgi` crate. The library returns a
+	/// `FCGI_UNKNOWN_TYPE` record to the web-server.
+	UnknownRecordType(RequestId, u8),
+
+	/// An IoError occurred. Most likely the connection to the web-server got lost or
+	/// was interrupted. Some I/O errors are handled by `tokio-fastcgi`. If the
+	/// web-server closes the FastCGI connection after all requests have been
+	/// processed no error is returned and the EOF error is just swallowed.
 	IoError(std::io::Error)
 }
 
@@ -329,7 +311,7 @@ impl std::fmt::Display for Error {
 			Error::SequenceError => write!(f, "Records out of sequence "),
 			Error::InvalidRecordVersion => write!(f, "Only record version 1 supported"),
 			Error::InvalidRoleNumber => write!(f, "Unkown role pass from server"),
-			Error::UnkownRecordType(request_id, type_id) => write!(f, "Unkown record type {} in request {} received", type_id, request_id),
+			Error::UnknownRecordType(request_id, type_id) => write!(f, "Unkown record type {} in request {} received", type_id, request_id),
 			Error::IoError(error) => write!(f, "I/O error: {}", error)
 		}
 	}
@@ -350,7 +332,7 @@ impl From<std::io::Error> for Error {
 	}
 }
 
-/// Represents a record received by the webserver.
+/// Represents a record received by the web-server.
 struct Record {
 	record_type: RequestType,
 	request_id: RequestId,
@@ -371,7 +353,7 @@ impl Record {
 		}
 
 		// Parse the remaining header fields
-		// Unwrap the record_type field not yet. An error on the record_type can be handeled
+		// Unwrap the record_type field not yet. An error on the record_type can be handled
 		// and we must read the remaining data to keep the I/O stream in sync.
 		let record_type = RequestType::try_from(byteorder::ReadBytesExt::read_u8(&mut header_slice).unwrap());
 		let request_id = byteorder::ReadBytesExt::read_u16::<BigEndian>(&mut header_slice)?;
@@ -379,7 +361,7 @@ impl Record {
 		let padding_length = byteorder::ReadBytesExt::read_u8(&mut header_slice).unwrap() as u64;
 
 		// Allocate the buffer for the content and read everything asynchronously.
-		// `with_capacity` can not be used, because tokio does not support this.
+		// `with_capacity` can not be used, because Tokio does not support this.
 		let mut content = vec![0; content_length];
 		rd.read_exact(&mut content).await?;
 
@@ -391,10 +373,10 @@ impl Record {
 		trace!("FastCGI: In record {{T:{:?}, ID: {}, L:{}}}", record_type, request_id, RECORD_HEADER_SIZE + content.len() + padding_length as usize);
 
 		// Now we unwrap the record_type. If we fail now, the record as been completely read.
-		// Before we can unwrap the TypeError must be translated into a full blown Error::UnkownRecordType value by adding the request_id.
+		// Before we can unwrap the TypeError must be translated into a full blown Error::UnknownRecordType value by adding the request_id.
 		let record_type = record_type.map_err(|error| {
-			let TypeError::UnkownRecordType(record_type_nr) = error;
-			Error::UnkownRecordType(request_id, record_type_nr)
+			let TypeError::UnknownRecordType(record_type_nr) = error;
+			Error::UnknownRecordType(request_id, record_type_nr)
 		})?;
 
 		Ok(Self {
@@ -421,9 +403,9 @@ impl Record {
 	}
 }
 
-/// Implements a data stream from the webserver to the FastCGI application.
+/// Implements a data stream from the web-server to the FastCGI application.
 ///
-/// All data is bufferd in memory before being returned to the FastCGI
+/// All data is buffered in memory before being returned to the FastCGI
 /// application. Therefore only a synchronous interface is implemented.
 ///
 /// The data of the stream can be accessed via the methods of the [`Read`
@@ -435,7 +417,7 @@ pub struct InStream {
 }
 
 impl Read for InStream {
-	/// Read implementaiton for Stream.
+	/// Read implementation for Stream.
 	///
 	/// *Beware*: Calling read or read_exact on a stream that is not done will panic!
 	fn read(&mut self, out: &mut [u8]) -> std::result::Result<usize, std::io::Error> {
@@ -445,7 +427,7 @@ impl Read for InStream {
 		Ok(c)
 	}
 
-	/// Read_exact implementaiton for Stream.
+	/// Read_exact implementation for Stream.
 	///
 	/// *Beware*: Calling read or read_exact on a stream that is not done will panic!
 	fn read_exact(&mut self, out: &mut [u8]) -> std::result::Result<(), std::io::Error> {
@@ -501,14 +483,14 @@ impl InStream{
 /// of the [Requests] struct. It represents one request that should be handled
 /// via FastCGI. Normally [`process`](Request::process) is called on every
 /// instance that is returned. The request gets passed to the callback function
-/// and can be used to get the input/output streams and envrionment values.
+/// and can be used to get the input/output streams and environment values.
 pub struct Request <W: AsyncWrite + Unpin> {
 	/// Contains the role that this request is requesting from the FastCGI
 	/// application.
 	///
 	/// If the FastCGI application can not comply to this role the callback
 	/// passed to [`process`](Request::process) should return
-	/// [`RequestResult::UnkownRole`].
+	/// [`RequestResult::UnknownRole`].
 	pub role: Role,
 	keep_connection: bool,
 	request_id: RequestId,
@@ -590,7 +572,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	///
 	/// Parameters are passed to the FastCGI application as name value pairs.
 	/// Parameters can contain environment variables or other parameters that
-	/// the webserver wants to pass to the application.
+	/// the web-server wants to pass to the application.
 	///
 	/// If the parameter does not exist `None` is returned.
 	///
@@ -620,13 +602,13 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 		}
 	}
 
-	/// Returns the parameter with the given name as a utf8 string.
+	/// Returns the parameter with the given name as a UTF-8 string.
 	///
 	/// Parameters are passed to the FastCGI application as name value pairs.
 	/// Parameters can contain environment variables or other parameters that
-	/// the webserver wants to pass to the application.
+	/// the web-server wants to pass to the application.
 	///
-	/// If the parameter does not exist or is not valid UTF8 `None` is returned.
+	/// If the parameter does not exist or is not valid UTF-8 `None` is returned.
 	///
 	/// ## Example
 	///
@@ -661,7 +643,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 		}
 	}
 
-	/// Checks if this record is ready for processing by the clinet application.
+	/// Checks if this record is ready for processing by the client application.
 	/// A record is ready if the stdin, the data and the params stream are done (EOF).
 	fn check_ready(&mut self) -> bool {
 		self.get_stdin().is_done() && self.get_data().is_done() && self.params_done
@@ -712,7 +694,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// Returns the request id of this request.
 	///
 	/// This id is unique within the current connection. It is managed by the
-	/// webserver.
+	/// web-server.
 	pub fn get_request_id(&self) -> RequestId {
 		self.request_id
 	}
@@ -720,7 +702,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// Allows the process closure to write to StdOut.
 	///
 	/// Returns an `OutStream` instance that will send `StdOut` records back to
-	/// the webserver.
+	/// the web-server.
 	///
 	///
 	/// ## Example
@@ -748,8 +730,8 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// Allows the process closure to write to StdErr.
 	///
 	/// Returns an `OutStream` instance that will send `StdErr` records back to
-	/// the webserver. What is done with the data that is sent to StdErr depends
-	/// on the webserver.
+	/// the web-server. What is done with the data that is sent to StdErr depends
+	/// on the web-server.
 	///
 	/// ## Example
 	///
@@ -776,7 +758,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// Allows the process closure to read from StdIn.
 	///
 	/// Returns an `InStream` instance that will read the data passed as StdIn
-	/// by the webserver.
+	/// by the web-server.
 	///
 	/// ## Example
 	///
@@ -807,7 +789,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// Allows the process closure to read from the Data stream.
 	///
 	/// Returns an `InStream` instance that will read the data passed as a Data
-	/// stream by the webserver.
+	/// stream by the web-server.
 	///
 	/// ## Example
 	///
@@ -842,7 +824,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// to be processed. The application logic is passed to `process` via a
 	/// callback function.
 	///
-	/// The callback function gets a refernce to the [`Request`] instance that
+	/// The callback function gets a reference to the [`Request`] instance that
 	/// contains all necessary information (input-/output-streams, parameters,
 	/// etc.) for processing the request.
 	///
@@ -850,13 +832,13 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	///
 	/// ## Callback function
 	///
-	/// The callback function can access all information about the reuquest via
+	/// The callback function can access all information about the request via
 	/// the passed `request` parameter. The return value can be one of the
 	/// following values:
 	///
 	/// - [`RequestResult::Complete`]
 	/// - [`RequestResult::Overloaded`]
-	/// - [`RequestResult::UnkownRole`]
+	/// - [`RequestResult::UnknownRole`]
 	///
 	/// ## Example
 	///
@@ -900,11 +882,11 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 
 /// Processes records form an input and output stream.
 ///
-/// FastCGI allow multiple requests to be interleaved within one datastream.
+/// FastCGI allow multiple requests to be interleaved within one data-stream.
 /// This struct reads the FastCGI-records from an input stream and assembles
 /// them into a [`Request`].
 ///
-/// *Beware*: Requests are built in memory. Havig huge requests can eat up all
+/// *Beware*: Requests are built in memory. Having huge requests can eat up all
 /// of your systems memory.
 pub struct Requests <R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> {
 	reader: R,
@@ -921,18 +903,18 @@ impl <'w, R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R,
 	/// As soon as a new connection is accepted the read and write parts of this
 	/// connection should be passed to this function. It will create a new
 	/// [`Requests`] instance that will handle the communication between the
-	/// webserver and the FastCGI application.
+	/// web-server and the FastCGI application.
 	///
 	/// In addition to the read and write side of the connection two more
 	/// parameters must be passed:
 	///
 	/// - max_conns \
-	///   Maximum number of concurrent connections. This value will be returend
-	///   to the webserver to allow it to adjust its connection handling.
+	///   Maximum number of concurrent connections. This value will be returned
+	///   to the web-server to allow it to adjust its connection handling.
 	/// - max_reqs \
 	///   Maximum number of concurrent requests. Concurrent requests are
-	///   handled by tokyo-fastcgi but they consume memory. This value is used
-	///   to tell the webserver how many concurrent requests he can use per
+	///   handled by tokio-fastcgi but they consume memory. This value is used
+	///   to tell the web-server how many concurrent requests he can use per
 	///   connection.
 	pub fn new(rd: R, wr: W, max_conns: u8, max_reqs: u8) -> Self {
 		Self {
@@ -945,10 +927,10 @@ impl <'w, R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R,
 		}
 	}
 
-	/// Same as [`new`](Requests::new) but takes a tuple contining the read and write
+	/// Same as [`new`](Requests::new) but takes a tuple containing the read and write
 	/// side of the socket instead of two distinct variables
 	///
-	/// This is more convinient in combination with the `split` function.
+	/// This is more convenient in combination with the `split` function.
 	///
 	/// # Example
 	///
@@ -984,7 +966,7 @@ impl <'w, R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R,
 				SysReqType::GetValues => {
 					let mut params = HashMap::new();
 
-					//TODO: Is this function correctly places in request?
+					//TODO: Is this function correctly placed in request?
 					Request::<W>::add_nv_pairs(&mut params, record.get_content(), false)?;
 
 					// If we're testing this library we have to make sure that the output is sorted.
@@ -1038,8 +1020,8 @@ impl <'w, R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R,
 
 	/// Fetches the next request from this connection
 	///
-	/// This function asynchronously fetches FastCGI records and assebles them
-	/// into requests. It does the deinterlacing to allow multiple requests to
+	/// This function asynchronously fetches FastCGI records and assembles them
+	/// into requests. It does the de-interlacing to allow multiple requests to
 	/// be processed in parallel. As soon as the information for a request is
 	/// complete, it returns a [`Request`] instance for further processing.
 	///
@@ -1048,7 +1030,7 @@ impl <'w, R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R,
 	pub async fn next(&mut self) -> Result<Option<Request<W>>, Error> {
 		if self.close_on_next {
 			if !self.requests.is_empty() {
-				warn!("FastCGI: The webserver interleaved requests on this connection but did not use the FCGI_KEEP_CONN flag. {} requests will get lost.", self.requests.len());
+				warn!("FastCGI: The web-server interleaved requests on this connection but did not use the FCGI_KEEP_CONN flag. {} requests will get lost.", self.requests.len());
 			}
 
 			// Signal to the user that this connection should be closed.
@@ -1084,19 +1066,19 @@ impl <'w, R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R,
 					// IoError UnexpectedEof: May be ok or an error. Depends on if requests have been processed.
 					Err(Error::IoError(err)) if err.kind() == std::io::ErrorKind::UnexpectedEof => {
 						// An I/O-error signals the end of the stream. On record construction this is ok as long
-						// as there are no other requets in flight.
+						// as there are no other requests in flight.
 						if self.requests.is_empty() {
 							return Ok(None)
 						} else {
 							return Err(Error::from(err));
 						}
 					},
-					// UnkownRecordType must be transmitted back to the server. This is not a fatal error.
-					Err(Error::UnkownRecordType(request_id, type_id)) => {
+					// UnknownRecordType must be transmitted back to the server. This is not a fatal error.
+					Err(Error::UnknownRecordType(request_id, type_id)) => {
 						let output_stream = OutRecordWriter::new(self.writer.clone(), request_id);
 						output_stream.write_unkown_type(type_id).await?;
 					},
-					// An error occured, exit the loop and return it...
+					// An error occurred, exit the loop and return it...
 					Err(err) => {
 						return Err(err);
 					}
@@ -1106,7 +1088,7 @@ impl <'w, R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R,
 	}
 }
 
-// Generate nicer debug output for Request. This is usefull if you look at the request
+// Generate nicer debug output for Request. This is useful if you look at the request
 // from within the `process` function.
 impl <W: AsyncWrite + Unpin> Debug for Request<W> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -1126,7 +1108,7 @@ impl <W: AsyncWrite + Unpin> Debug for Request<W> {
 	}
 }
 
-/// Sends output records to the webserver.
+/// Sends output records to the web-server.
 #[derive(Debug)]
 struct OutRecordWriter<W: AsyncWrite> {
 	inner_stream: Arc<Mutex<W>>,
@@ -1164,7 +1146,7 @@ impl <W: AsyncWrite + Unpin> OutRecordWriter<W> {
 		// Write no padding
 	}
 
-	/// Sends an `EndRequest` response to the webserver and ends the current
+	/// Sends an `EndRequest` response to the web-server and ends the current
 	/// request.
 	async fn write_finish(&self, result: RequestResult) -> Result<(), std::io::Error> {
 		let mut end_message = Vec::with_capacity(8);
@@ -1179,7 +1161,7 @@ impl <W: AsyncWrite + Unpin> OutRecordWriter<W> {
 		Ok(())
 	}
 
-	/// Sends an `UnkownType` response to the webserver.
+	/// Sends an `UnknownType` response to the web-server.
 	async fn write_unkown_type(&self, type_id: u8) -> Result<(), std::io::Error> {
 		let mut ut_message = Vec::with_capacity(8);
 
@@ -1187,7 +1169,7 @@ impl <W: AsyncWrite + Unpin> OutRecordWriter<W> {
 		// Write 7 reserved bytes
 		std::io::Write::write_all(&mut ut_message, &[0u8; 7])?;
 
-		self.write_data(ResponseType::Sys(SysRespType::UnkownType), &ut_message[..]).await?;
+		self.write_data(ResponseType::Sys(SysRespType::UnknownType), &ut_message[..]).await?;
 
 		Ok(())
 	}
@@ -1197,10 +1179,10 @@ impl <W: AsyncWrite + Unpin> OutRecordWriter<W> {
 	}
 }
 
-/// Implements a data stream from the FastCGI application to the webserver.
+/// Implements a data stream from the FastCGI application to the web-server.
 ///
 /// The maximum chunk size is 64k. The calls made by this
-/// interface may block if the webserver is not receiving the data fast enough.
+/// interface may block if the web-server is not receiving the data fast enough.
 /// Therefore all calls are implemented as async functions.
 pub struct OutStream<W: AsyncWrite + Unpin> {
 	orw: Arc<OutRecordWriter<W>>,
@@ -1217,7 +1199,7 @@ impl <W: AsyncWrite + Unpin> OutStream<W> {
 		}
 	}
 
-	/// Send data to the webserver.
+	/// Send data to the web-server.
 	///
 	/// If the data is bigger than 64k the transfer is automatically split into
 	/// chunks of 64k.
@@ -1229,7 +1211,7 @@ impl <W: AsyncWrite + Unpin> OutStream<W> {
 		}
 
 		// Check if the data can be transmitted in one chunk.
-		// If not, split the data in chuks of u16 - 1 size.
+		// If not, split the data in chunks of u16 - 1 size.
 		if data.len() < u16::max_value() as usize {
 			Ok(self.orw.write_data(self.record_type, data).await?)
 		} else {
@@ -1243,7 +1225,7 @@ impl <W: AsyncWrite + Unpin> OutStream<W> {
 		}
 	}
 
-	/// Flushes the data to the webserver immediately.
+	/// Flushes the data to the web-server immediately.
 	///
 	/// This function also calls flush on the underlying stream.
 	pub async fn flush(&self) -> std::result::Result<(), std::io::Error> {
