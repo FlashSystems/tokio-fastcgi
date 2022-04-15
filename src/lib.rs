@@ -1,7 +1,7 @@
 #![warn(missing_docs)]
 #![doc = include_str!("../README.md")]
 //! # Basic Example
-//! ```rust
+//! ```no_run
 #![doc = include_str!("../examples/simple.rs")]
 //! ```
 use log::{trace, warn};
