@@ -2,7 +2,7 @@
 name = "tokio-fastcgi"
 description = "FastCGI handler (responder, authorizer, filter) library for Tokio"
 license = "Apache-2.0"
-keywords = [ "protocol", "server", "cgi", "fastcgi", "web", "tokio", "async" ]
+keywords = [ "protocol", "fastcgi", "web", "tokio", "async" ]
 categories = [ "web-programming", "network-programming", "asynchronous" ]
 version = "1.0.0"
 authors = ["Daniel Goß <developer@flashsystems.de>"]
