@@ -22,3 +22,7 @@ The returned [`Request`](https://docs.rs/tokio-fastcgi/latest/tokio_fastcgi/stru
 This is repeated while the [`Requests`](https://docs.rs/tokio-fastcgi/latest/tokio_fastcgi/struct.Requests.html) instance for the connection returns more requests. If no more requests are returned, the stream will be dropped and the connection to the web-server will be closed.
 
 This library handles connection reuse and aborting requests for the user. See [`Requests::next`](https://docs.rs/tokio-fastcgi/latest/tokio_fastcgi/struct.Requests.html#method.next) for more details.
+
+## Examples
+
+The library contains two examples: [A bare bones one](https://github.com/FlashSystems/tokio-fastcgi/blob/master/examples/simple.rs) and a litte [REST API](https://github.com/FlashSystems/tokio-fastcgi/blob/master/examples/apiserver.rs). Just have a look :)
