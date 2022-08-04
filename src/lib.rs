@@ -5,6 +5,7 @@
 #![doc = include_str!("../examples/simple.rs")]
 //! ```
 use log::{trace, warn};
+use std::collections::hash_map::Keys;
 use std::fmt::Debug;
 use std::marker::Unpin;
 use std::io::{Read, Write};
@@ -566,6 +567,15 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 		}
 
 		Ok(())
+	}
+
+	/// Returns an iterator over the parameter keys.
+	pub fn get_param_keys(&self) -> Option<Keys<'_, String, Vec<u8>>> {
+		if self.params_done {
+			Some(self.params.keys())
+		} else {
+			None
+		}
 	}
 
 	/// Returns the parameter with the given name as a byte vector.

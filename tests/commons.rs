@@ -83,6 +83,13 @@ impl TestCase for TestParamsInOut {
 	}
 
 	async fn processor<W: AsyncWrite + Unpin + Send>(request: Arc<Request<W>>) -> RequestResult {
+		let mut keys: Vec<String> = request.get_param_keys().unwrap().map(|k| k.clone()).collect();
+		keys.sort();
+
+		assert_eq!(keys.len(), 2);
+		assert_eq!(keys[0], "server_port");
+		assert_eq!(keys[1], "test");
+
 		// Check the parameters
 		let sp = request.get_param("SERVER_PORT");
 		assert!(sp.is_some());
