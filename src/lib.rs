@@ -28,6 +28,12 @@ const ERR_LOCK_FAILED: &str = "A request must not be processed by multiple threa
 /// The type of the request id. This is always u16 but makes external code more readable.
 type RequestId = u16;
 
+/// Types for the parameter iterator
+type ParamsIterator<'i> = dyn Iterator<Item=(&'i str, &'i [u8])> + 'i;
+
+/// Types for the parameter iterator with string conversion
+type StrParamsIterator<'i> = dyn Iterator<Item=(&'i str, Option<&'i str>)> + 'i;
+
 /// Type returned by [`get_stdin`](Request::get_stdin) and [`get_data`](Request::get_data).
 /// It makes passing around the streams easier.
 pub type OwnedInStream<'a> = MutexGuard<'a, InStream>;
@@ -638,6 +644,80 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 					None
 				}
 			}
+		} else {
+			None
+		}
+	}
+
+	/// Returns an iterator over all parameters.
+	///
+	/// The parameter value is a [u8] slice containing the raw data for the parameter.
+	/// If you need the parameter values as string, take a look at [str_params_iter](Request::str_params_iter).
+	///
+	/// ## Example
+	///
+	/// ```rust
+	/// # use tokio::io::{empty, sink};
+	/// # use tokio_fastcgi::{Requests, RequestResult};
+	/// # #[tokio::main]
+	/// # async fn main() {
+	/// # let mut requests = Requests::new(empty(), sink(), 1, 1);
+	/// # if let Some(request) = requests.next().await.expect("Request could not be constructed.") {
+	/// request.process(|request| async move {
+	///   if let Some(params) = request.params_iter() {
+	///     // Output a list of all parameters
+	///     for param in params {
+	///       println!("{}: {:?}", param.0, param.1);
+	///     }
+	///   }
+	///
+	///   RequestResult::Complete(0)
+	/// });
+	/// # } }
+	/// ```
+	pub fn params_iter(&self) -> Option<Box<ParamsIterator>> {
+		if self.params_done {
+			Some(Box::new(self.params.iter().map(|v| {
+				(v.0.as_str(), &v.1[..])
+			})))
+		} else {
+			None
+		}
+	}
+
+	/// Returns an iterator over all parameters that tries to convert the parameter
+	/// values into strings.
+	///
+	/// The parameter value is an [Option] containing a [String] reference.
+	/// If the parameter could not be converted into a string (because it is not valid UTF8)
+	/// the [Option] will be [None](Option::None).
+	///
+	/// ## Example
+	///
+	/// ```rust
+	/// # use tokio::io::{empty, sink};
+	/// # use tokio_fastcgi::{Requests, RequestResult};
+	/// # #[tokio::main]
+	/// # async fn main() {
+	/// # let mut requests = Requests::new(empty(), sink(), 1, 1);
+	/// # if let Some(request) = requests.next().await.expect("Request could not be constructed.") {
+	/// request.process(|request| async move {
+	///   if let Some(params) = request.str_params_iter() {
+	///     // Output a list of all parameters
+	///     for param in params {
+	///       println!("{}: {}", param.0, param.1.unwrap_or("[Invalid UTF8]"));
+	///     }
+	///   }
+	///
+	///   RequestResult::Complete(0)
+	/// });
+	/// # } }
+	/// ```
+	pub fn str_params_iter(&self) -> Option<Box<StrParamsIterator>> {
+		if self.params_done {
+			Some(Box::new(self.params.iter().map(|v| {
+				(v.0.as_str(), std::str::from_utf8(v.1).ok())
+			})))
 		} else {
 			None
 		}

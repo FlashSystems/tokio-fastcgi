@@ -67,7 +67,7 @@ impl TestCase for TestParamsInOut {
 	fn get_input() -> Mock {
 		Builder::new()
 			.read(&create_record(RecordType::BeginRequest, 0x01, 0x09, &[ 0x00, RecordRole::Responder as u8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
-			.read(&create_record(RecordType::Params, 0x01, 0x06, b"\x0B\x02SERVER_PORT80\x04\x03TESTYES"))
+			.read(&create_record(RecordType::Params, 0x01, 0x06, b"\x0B\x02SERVER_PORT80\x04\x03TESTYES\x06\x03NOUTF8NO\xF0"))
 			.read(&create_record(RecordType::Params, 0x01, 0x00, &[]))
 			.read(&create_record(RecordType::StdIn, 0x01, 0x03, &(0..100u8).collect::<Vec<u8>>()[..] ))	// Fill StdIn
 			.read(&create_record(RecordType::StdIn, 0x01, 0x03, &[]))
@@ -86,13 +86,46 @@ impl TestCase for TestParamsInOut {
 		// Check the parameters
 		let sp = request.get_param("SERVER_PORT");
 		assert!(sp.is_some());
-		assert_eq!(String::from_utf8(sp.unwrap().to_vec()).unwrap(), "80");
+		assert_eq!(sp.unwrap(), &[b'8', b'0']);
+		let sp = request.get_str_param("SERVER_PORT");
+		assert!(sp.is_some());
+		assert_eq!(sp.unwrap(), "80");
 
 		let tst = request.get_param("TEST");
 		assert!(tst.is_some());
-		assert_eq!(String::from_utf8(tst.unwrap().to_vec()).unwrap(), "YES");
+		assert_eq!(tst.unwrap(), &[b'Y', b'E', b'S']);
+		let tst = request.get_str_param("TEST");
+		assert!(tst.is_some());
+		assert_eq!(tst.unwrap(), "YES");
+
+		let noutf8 = request.get_param("NOUTF8");
+		assert!(noutf8.is_some());
+		assert_eq!(noutf8.unwrap(), &[b'N', b'O', 0xF0]);
+		assert!(request.get_str_param("NOUTF8").is_none());
 
 		assert!(request.get_param("SERVER_DUMMY").is_none());
+
+		// Test the params iterator
+		let mut params: Vec<(&str, &[u8])> = request.params_iter().unwrap().collect();
+		assert_eq!(params.len(), 3);
+		params.sort();
+		assert_eq!(params[0].0, "noutf8");
+		assert_eq!(params[0].1, &[b'N', b'O', 0xF0]);
+		assert_eq!(params[1].0, "server_port");
+		assert_eq!(params[1].1, &[b'8', b'0']);
+		assert_eq!(params[2].0, "test");
+		assert_eq!(params[2].1, &[b'Y', b'E', b'S']);
+
+		// Test the string params iterator
+		let mut params: Vec<(&str, Option<&str>)> = request.str_params_iter().unwrap().collect();
+		assert_eq!(params.len(), 3);
+		params.sort();
+		assert_eq!(params[0].0, "noutf8");
+		assert_eq!(params[0].1, None);
+		assert_eq!(params[1].0, "server_port");
+		assert_eq!(params[1].1, Some("80"));
+		assert_eq!(params[2].0, "test");
+		assert_eq!(params[2].1, Some("YES"));
 
 		// Check if stdin is valid
 		let mut stdin = [0u8; 100];
