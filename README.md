@@ -26,3 +26,11 @@ This library handles connection reuse and aborting requests for the user. See [`
 ## Examples
 
 The library contains two examples: [A bare bones one](https://github.com/FlashSystems/tokio-fastcgi/blob/master/examples/simple.rs) and a litte [REST API](https://github.com/FlashSystems/tokio-fastcgi/blob/master/examples/apiserver.rs). Just have a look :)
+
+## Changelog
+
+* Version 1.0.0\
+  Initial release
+
+* Version 1.1.0\
+  Add methods to enumerate the parameters of a request ([params_iter](https://docs.rs/tokio-fastcgi/latest/tokio_fastcgi/struct.Request.html#method.params_iter) and [str_params_iter](https://docs.rs/tokio-fastcgi/latest/tokio_fastcgi/struct.Request.html#method.str_params_iter)).
