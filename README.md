@@ -10,7 +10,7 @@ This crate implements a FastCGI handler for Tokio. It's a complete re-implementa
 If you just want to use this library, look at the examples, open the documentation and start using it by adding the following to the `[dependencies]` section of your `Cargo.toml`:
 
 ```toml
-tokio-fastcgi = "1.0"
+tokio-fastcgi = "1"
 ```
 
 ## Principle of operation
