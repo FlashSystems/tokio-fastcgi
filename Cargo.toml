@@ -15,7 +15,7 @@ exclude = [ "*.code-workspace", ".vscode" ]
 [dependencies]
 tokio = { version = "1", features = ["rt", "io-util", "macros", "sync"] }
 log = "0.4"
-byteorder = "1.4"
+byteorder = "1"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["test-util", "net", "rt-multi-thread"] }
