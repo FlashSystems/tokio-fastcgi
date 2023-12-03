@@ -34,3 +34,6 @@ The library contains two examples: [A bare bones one](https://github.com/FlashSy
 
 * Version 1.1.0\
   Add methods to enumerate the parameters of a request ([params_iter](https://docs.rs/tokio-fastcgi/latest/tokio_fastcgi/struct.Request.html#method.params_iter) and [str_params_iter](https://docs.rs/tokio-fastcgi/latest/tokio_fastcgi/struct.Request.html#method.str_params_iter)).
+
+* Version 1.1.1\
+  Update dependency versions. Make dependency to `once_cell` less restrictive.
