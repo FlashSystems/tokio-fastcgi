@@ -1239,10 +1239,11 @@ impl <W: AsyncWrite + Unpin> OutRecordWriter<W> {
 	async fn write_finish(&self, result: RequestResult) -> Result<(), std::io::Error> {
 		let mut end_message = Vec::with_capacity(8);
 
-		byteorder::WriteBytesExt::write_u32::<BigEndian>(&mut end_message, result.app_status())?;
-		byteorder::WriteBytesExt::write_u8(&mut end_message, result.into())?;
+		// Unwrap is safe here because we're writing to an in memory buffer. This must never fail.
+		byteorder::WriteBytesExt::write_u32::<BigEndian>(&mut end_message, result.app_status()).unwrap();
+		byteorder::WriteBytesExt::write_u8(&mut end_message, result.into()).unwrap();
 		// Write 3 reserved bytes
-		std::io::Write::write_all(&mut end_message, &[0u8; 3])?;
+		std::io::Write::write_all(&mut end_message, &[0u8; 3]).unwrap();
 
 		self.write_data(Category::Std(StdRespType::EndRequest), &end_message[..]).await?;
 
@@ -1253,9 +1254,10 @@ impl <W: AsyncWrite + Unpin> OutRecordWriter<W> {
 	async fn write_unkown_type(&self, type_id: u8) -> Result<(), std::io::Error> {
 		let mut ut_message = Vec::with_capacity(8);
 
-		byteorder::WriteBytesExt::write_u8(&mut ut_message, type_id)?;
+		// Unwrap is safe here because we're writing to an in memory buffer. This must never fail.
+		byteorder::WriteBytesExt::write_u8(&mut ut_message, type_id).unwrap();
 		// Write 7 reserved bytes
-		std::io::Write::write_all(&mut ut_message, &[0u8; 7])?;
+		std::io::Write::write_all(&mut ut_message, &[0u8; 7]).unwrap();
 
 		self.write_data(ResponseType::Sys(SysRespType::UnknownType), &ut_message[..]).await?;
 
