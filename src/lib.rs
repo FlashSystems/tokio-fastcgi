@@ -7,7 +7,7 @@
 use log::{trace, warn};
 use std::fmt::Debug;
 use std::marker::Unpin;
-use std::io::{Read, Write};
+use std::io::{Cursor, Read, Write};
 use std::collections::{HashMap, hash_map::Entry};
 use std::sync::Arc;
 use tokio::io::{AsyncRead, AsyncWrite, AsyncReadExt, AsyncWriteExt};
@@ -1207,18 +1207,26 @@ impl <W: AsyncWrite + Unpin> OutRecordWriter<W> {
 		trace!("FastCGI: Out record {{T:{:?}, ID: {}, L:{}}}", record_type, self.request_id, RECORD_HEADER_SIZE + data.len());
 
 		// Construct the header
+		// We use unwrap here because we're writing to a vec. This must never fail.
+		let mut message_header = Vec::with_capacity(8);
+		byteorder::WriteBytesExt::write_u8(&mut message_header, 1).unwrap();                                // Version
+		byteorder::WriteBytesExt::write_u8(&mut message_header, record_type.into()).unwrap();               // Record Type
+		byteorder::WriteBytesExt::write_u16::<BigEndian>(&mut message_header, self.request_id).unwrap();    // Request ID
+		byteorder::WriteBytesExt::write_u16::<BigEndian>(&mut message_header, data.len() as u16).unwrap();  // Content length
+		byteorder::WriteBytesExt::write_u8(&mut message_header, 0).unwrap();                                // No padding.
+		byteorder::WriteBytesExt::write_u8(&mut message_header, 0).unwrap();                                // Reserved
+
+		// Aquire the mutext guard to prevent the header and the payload to pe torn apart.
 		let mut is = self.inner_stream.try_lock().expect(ERR_LOCK_FAILED);
-		is.write_u8(1).await?;                     // Version
-		is.write_u8(record_type.into()).await?;    // Record Type
-		is.write_u16(self.request_id).await?;      // Request ID
-		is.write_u16(data.len() as u16).await?;    // Content length
-		is.write_u8(0).await?;                     // No padding.
-		is.write_u8(0).await?;                     // Reserved
+
+		// Write the messge header
+		is.write_all_buf(&mut Cursor::new(message_header)).await?;
 
 		// Write the data
 		// Writing empty data blocks breaks tokio-test. Therefore we only call write if the data-buffer is not empty.
 		if !data.is_empty() {
-			is.write(data).await
+			is.write_all_buf(&mut Cursor::new(data)).await?;
+			Ok(data.len())
 		} else {
 			Ok(0)
 		}
