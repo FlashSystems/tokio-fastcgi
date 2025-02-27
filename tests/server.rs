@@ -56,7 +56,7 @@ fn network_test<T: TestCase>() {
 
 				match listener.accept().await {
 					Err(err) => {
-						println!("Establishing connection failed: {}", err);
+						println!("Establishing connection failed: {err}");
 						break;
 					},
 					Ok(mut socket) => {

@@ -11,11 +11,11 @@ async fn main() {
 		// Accept new connections
 		match connection {
 			Err(err) => {
-				println!("Establishing connection failed: {}", err);
+				println!("Establishing connection failed: {err}");
 				break;
 			},
 			Ok((mut stream, address)) => {
-				println!("Connection from {}", address);
+				println!("Connection from {address}");
 
 				// If the socket connection was established successfully spawn a new task to handle
 				// the requests that the webserver will send us.
@@ -31,7 +31,7 @@ async fn main() {
 							RequestResult::Complete(0)
 						}).await {
 							// This is the error handler that is called if the process call returns an error.
-							println!("Processing request failed: {}", err);
+							println!("Processing request failed: {err}");
 						}
 					}
 				});

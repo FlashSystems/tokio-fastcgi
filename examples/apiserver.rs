@@ -271,11 +271,11 @@ async fn main() {
 		// Accept new connections
 		match connection {
 			Err(err) => {
-				println!("Establishing connection failed: {}", err);
+				println!("Establishing connection failed: {err}");
 				break;
 			},
 			Ok((stream, address)) => {
-				println!("Connection from {}", address);
+				println!("Connection from {address}");
 
 				let conn_store = store.clone();
 
@@ -294,7 +294,7 @@ async fn main() {
 							process_request(req_store.clone(), request).await.unwrap()
 						}).await {
 							// This is the error handler that is called if the process call returns an error.
-							println!("Processing request failed: {}", err);
+							println!("Processing request failed: {err}");
 						}
 					}
 				});

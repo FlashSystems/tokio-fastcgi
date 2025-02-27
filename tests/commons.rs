@@ -45,10 +45,10 @@ pub enum RecordFlags {
 pub fn create_record(request_type: RecordType, request_id: u8, padding: u8, data: &[u8]) -> Vec<u8> {
 	let content_length = data.len() as u16;
 
-	let mut record = vec![0x01, request_type as u8, 0x00, request_id, (content_length >> 8 & 0xFF) as u8, (content_length & 0xFF) as u8, padding, 0x00];
+	let mut record = vec![0x01, request_type as u8, 0x00, request_id, ((content_length >> 8) & 0xFF) as u8, (content_length & 0xFF) as u8, padding, 0x00];
 
 	record.extend_from_slice(data);
-	record.extend_from_slice(&*vec![0u8; padding as usize]);
+	record.extend_from_slice(&vec![0u8; padding as usize]);
 
 	record
 }
@@ -84,14 +84,14 @@ impl TestCase for TestParamsInOut {
 		// Check the parameters
 		let sp = request.get_param("SERVER_PORT");
 		assert!(sp.is_some());
-		assert_eq!(sp.unwrap(), &[b'8', b'0']);
+		assert_eq!(sp.unwrap(), b"80");
 		let sp = request.get_str_param("SERVER_PORT");
 		assert!(sp.is_some());
 		assert_eq!(sp.unwrap(), "80");
 
 		let tst = request.get_param("TEST");
 		assert!(tst.is_some());
-		assert_eq!(tst.unwrap(), &[b'Y', b'E', b'S']);
+		assert_eq!(tst.unwrap(), b"YES");
 		let tst = request.get_str_param("TEST");
 		assert!(tst.is_some());
 		assert_eq!(tst.unwrap(), "YES");
@@ -110,9 +110,9 @@ impl TestCase for TestParamsInOut {
 		assert_eq!(params[0].0, "noutf8");
 		assert_eq!(params[0].1, &[b'N', b'O', 0xF0]);
 		assert_eq!(params[1].0, "server_port");
-		assert_eq!(params[1].1, &[b'8', b'0']);
+		assert_eq!(params[1].1, b"80");
 		assert_eq!(params[2].0, "test");
-		assert_eq!(params[2].1, &[b'Y', b'E', b'S']);
+		assert_eq!(params[2].1, b"YES");
 
 		// Test the string params iterator
 		let mut params: Vec<(&str, Option<&str>)> = request.str_params_iter().unwrap().collect();

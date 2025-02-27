@@ -317,8 +317,8 @@ impl std::fmt::Display for Error {
 			Error::SequenceError => write!(f, "Records out of sequence "),
 			Error::InvalidRecordVersion => write!(f, "Only record version 1 supported"),
 			Error::InvalidRoleNumber => write!(f, "Unkown role pass from server"),
-			Error::UnknownRecordType(request_id, type_id) => write!(f, "Unkown record type {} in request {} received", type_id, request_id),
-			Error::IoError(error) => write!(f, "I/O error: {}", error)
+			Error::UnknownRecordType(request_id, type_id) => write!(f, "Unkown record type {type_id} in request {request_id} received"),
+			Error::IoError(error) => write!(f, "I/O error: {error}")
 		}
 	}
 }
@@ -542,7 +542,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 			let length_byte2 = u32::from(src.read_u8()?);
 			let length_byte10 = u32::from(src.read_u16::<BigEndian>()?);
 
-			Ok((length & 0x7f) << 24 | length_byte2 << 16 | length_byte10)
+			Ok(((length & 0x7f) << 24) | (length_byte2 << 16) | length_byte10)
 		}
 	}
 
@@ -640,7 +640,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 				None => None,
 				Some(Ok(value)) => Some(value),
 				Some(Err(_)) => {
-					warn!("FastCGI: Parameter {} is not valid utf8.", name);
+					warn!("FastCGI: Parameter {name} is not valid utf8.");
 					None
 				}
 			}
@@ -977,7 +977,7 @@ pub struct Requests <R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> 
 	max_reqs: u8
 }
 
-impl <'w, R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R, W> {
+impl <R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R, W> {
 	/// Creates a new [`Requests`] instance.
 	///
 	/// As soon as a new connection is accepted the read and write parts of this
@@ -1178,7 +1178,7 @@ impl <W: AsyncWrite + Unpin> Debug for Request<W> {
 			let delimiter = if param_index > 0 { ", " } else { "" };
 
 			if let Some(str_value) = self.get_str_param(param_key) {
-				write!(f, "{}{}: \"{}\"", delimiter, param_key, str_value)?;
+				write!(f, "{delimiter}{param_key}: \"{str_value}\"")?;
 			} else {
 				write!(f, "{}{}: {:?}", delimiter, param_key, self.get_param(param_key))?;
 			}
@@ -1302,11 +1302,11 @@ impl <W: AsyncWrite + Unpin> OutStream<W> {
 
 		// Check if the data can be transmitted in one chunk.
 		// If not, split the data in chunks of u16 - 1 size.
-		if data.len() < u16::max_value() as usize {
+		if data.len() < u16::MAX as usize {
 			Ok(self.orw.write_data(self.record_type, data).await?)
 		} else {
 			// Transmit large streams in junks of 64k
-			const JUNK_SIZE: usize = (u16::max_value() - 1) as usize;
+			const JUNK_SIZE: usize = (u16::MAX - 1) as usize;
 			for offset in (0..data.len()).step_by(JUNK_SIZE) {
 				self.orw.write_data(self.record_type, &data[offset..(offset + JUNK_SIZE).min(data.len())]).await?;
 			}
