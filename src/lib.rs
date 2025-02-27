@@ -542,7 +542,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 			let length_byte2 = u32::from(src.read_u8()?);
 			let length_byte10 = u32::from(src.read_u16::<BigEndian>()?);
 
-			Ok((length & 0x7f) << 24 | length_byte2 << 16 | length_byte10)
+			Ok(((length & 0x7f) << 24) | (length_byte2 << 16) | length_byte10)
 		}
 	}
 
@@ -977,7 +977,7 @@ pub struct Requests <R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> 
 	max_reqs: u8
 }
 
-impl <'w, R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R, W> {
+impl <R: AsyncRead + Unpin + Send, W: AsyncWrite + Unpin + Send> Requests<R, W> {
 	/// Creates a new [`Requests`] instance.
 	///
 	/// As soon as a new connection is accepted the read and write parts of this
@@ -1302,11 +1302,11 @@ impl <W: AsyncWrite + Unpin> OutStream<W> {
 
 		// Check if the data can be transmitted in one chunk.
 		// If not, split the data in chunks of u16 - 1 size.
-		if data.len() < u16::max_value() as usize {
+		if data.len() < u16::MAX as usize {
 			Ok(self.orw.write_data(self.record_type, data).await?)
 		} else {
 			// Transmit large streams in junks of 64k
-			const JUNK_SIZE: usize = (u16::max_value() - 1) as usize;
+			const JUNK_SIZE: usize = (u16::MAX - 1) as usize;
 			for offset in (0..data.len()).step_by(JUNK_SIZE) {
 				self.orw.write_data(self.record_type, &data[offset..(offset + JUNK_SIZE).min(data.len())]).await?;
 			}
