@@ -1,6 +1,5 @@
 use std::{sync::Arc, collections::HashMap, io::Read};
 
-use async_trait::async_trait;
 use tokio::{net::{TcpListener, tcp::OwnedWriteHalf}, sync::RwLock};
 use tokio_fastcgi::{Requests, RequestResult, Request};
 
@@ -80,7 +79,6 @@ impl HttpResponse {
 
 /// Request handler trait. All request handlers have to implement this async trait.
 /// The default implementation for every method returns the 405 (Method Not Allowed) error code.
-#[async_trait]
 trait RequestHandler {
 	async fn get(_store: Arc<RwLock<Store>>, _request: &Request<OwnedWriteHalf>, _selector: Option<u32>) -> Result<String, HttpResponse> {
 		Err(HttpResponse::e405())
@@ -115,7 +113,6 @@ impl Store {
 /// Handles the REST API for quotes.
 struct Quotes {}
 
-#[async_trait]
 impl RequestHandler for Quotes {
 	/// Get returns the quote stored for the given selector u32 or 404 (Not Found).
 	async fn get(store: Arc<RwLock<Store>>, _request: &Request<OwnedWriteHalf>, selector: Option<u32>) -> Result<String, HttpResponse> {
@@ -189,7 +186,6 @@ impl RequestHandler for Quotes {
 /// Handle ping requests on /api/ping
 struct Ping {}
 
-#[async_trait]
 impl RequestHandler for Ping {
 	async fn get(_store: Arc<RwLock<Store>>, _request: &Request<OwnedWriteHalf>, _selector: Option<u32>) -> Result<String, HttpResponse> {
 		Ok("pong".to_string())
