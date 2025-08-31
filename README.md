@@ -40,3 +40,7 @@ The library contains two examples: [A bare bones one](https://github.com/FlashSy
 
 * Version 1.2.0\
   Fix bug #4: Under heavy load, FastCGI responses are not delivered correctly. This makes the FastCGI protocol fail and connections get dropped with various error messages. This release fixes this problem. The `tokio-fastcgi` library is now stable even under heavy load.
+
+* Version 1.3.0\
+  Two dependencies removed, whose functionality has been integrated into the standard library. The library remained unchanged, but the tests and examples have been revised. (Thanks to @linkmauve)\
+  Update to the dependency versions.
