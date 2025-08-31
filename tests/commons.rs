@@ -13,8 +13,8 @@ use std::sync::Arc;
 use std::time::Duration;
 use std::io::Read;
 use std::convert::From;
+use std::future::Future;
 use tokio::io::AsyncWrite;
-use async_trait::async_trait;
 
 pub enum RecordType {
 	BeginRequest = 1,
@@ -53,16 +53,14 @@ pub fn create_record(request_type: RecordType, request_id: u8, padding: u8, data
 	record
 }
 
-#[async_trait]
 pub trait TestCase {
 	fn get_input() -> Mock;
 	fn get_output() -> Mock;
-	async fn processor<W: AsyncWrite + Unpin + Send>(request: Arc<Request<W>>) -> RequestResult;
+	fn processor<W: AsyncWrite + Unpin + Send>(request: Arc<Request<W>>) -> impl Future<Output = RequestResult> + Send;
 }
 
 pub struct TestParamsInOut {}
 
-#[async_trait]
 impl TestCase for TestParamsInOut {
 	fn get_input() -> Mock {
 		Builder::new()
@@ -142,7 +140,6 @@ impl TestCase for TestParamsInOut {
 
 pub struct TestRoleAuthorizer {}
 
-#[async_trait]
 impl TestCase for TestRoleAuthorizer {
 	fn get_input() -> Mock {
 		Builder::new()
@@ -175,7 +172,6 @@ impl TestCase for TestRoleAuthorizer {
 
 pub struct TestRoleFilter {}
 
-#[async_trait]
 impl TestCase for TestRoleFilter {
 	fn get_input() -> Mock {
 		Builder::new()
@@ -219,7 +215,6 @@ impl TestCase for TestRoleFilter {
 
 pub struct TestAbortRequest {}
 
-#[async_trait]
 impl TestCase for TestAbortRequest {
 	fn get_input() -> Mock {
 		Builder::new()
@@ -243,7 +238,6 @@ impl TestCase for TestAbortRequest {
 
 pub struct TestAbortContinue {}
 
-#[async_trait]
 impl TestCase for TestAbortContinue {
 	fn get_input() -> Mock {
 		Builder::new()
@@ -279,7 +273,6 @@ impl TestCase for TestAbortContinue {
 
 pub struct TestUnknownRoleReturn {}
 
-#[async_trait]
 impl TestCase for TestUnknownRoleReturn {
 	fn get_input() -> Mock {
 		Builder::new()
@@ -306,7 +299,6 @@ impl TestCase for TestUnknownRoleReturn {
 
 pub struct TestUnknownRoleRequest {}
 
-#[async_trait]
 impl TestCase for TestUnknownRoleRequest {
 	fn get_input() -> Mock {
 		Builder::new()
@@ -331,7 +323,6 @@ impl TestCase for TestUnknownRoleRequest {
 
 pub struct TestUnknownRequestType {}
 
-#[async_trait]
 impl TestCase for TestUnknownRequestType {
 	fn get_input() -> Mock {
 		Builder::new()
@@ -355,7 +346,6 @@ impl TestCase for TestUnknownRequestType {
 
 pub struct TestGetValues {}
 
-#[async_trait]
 impl TestCase for TestGetValues {
 	fn get_input() -> Mock {
 		Builder::new()
@@ -380,7 +370,6 @@ impl TestCase for TestGetValues {
 pub struct TestKeepConnection {
 }
 
-#[async_trait]
 impl TestCase for TestKeepConnection {
 	fn get_input() -> Mock {
 		Builder::new()
