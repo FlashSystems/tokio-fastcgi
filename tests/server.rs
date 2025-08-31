@@ -20,15 +20,14 @@ use tokio::runtime;
 use tokio_fastcgi::Requests;
 use std::{io::{Read, Write}, panic};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, Shutdown, TcpStream};
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 use std::sync::mpsc::sync_channel;
-use once_cell::sync::Lazy;
 
 mod commons;
 use crate::commons::*;
 
 /// Global lock to prevent running more than one server via multithreaded tests.
-static GLOBAL_LOCK: Lazy<Mutex<u32>> = Lazy::new(|| { Mutex::default() });
+static GLOBAL_LOCK: LazyLock<Mutex<u32>> = LazyLock::new(|| { Mutex::default() });
 
 /// This is a test fixture that will run a FastCGI server on a free port and
 /// connect to it to run some test cases.
