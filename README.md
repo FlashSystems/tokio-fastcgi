@@ -43,4 +43,9 @@ The library contains two examples: [A bare bones one](https://github.com/FlashSy
 
 * Version 1.3.0\
   Two dependencies removed, whose functionality has been integrated into the standard library. The library remained unchanged, but the tests and examples have been revised. (Thanks to @linkmauve)\
-  Update to the dependency versions.
+  Update dependency versions.
+
+* Version 1.4.0\
+  Update the rust edition to 2024 and add 1.85 as the minimum supported rust version.\
+  Update dependency versions.
+
