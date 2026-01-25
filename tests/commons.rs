@@ -297,6 +297,9 @@ impl TestCase for TestUnknownRoleReturn {
 	}
 }
 
+// Allow dead code because the compiler will warn about this struct that is only
+// used within the integration tests.
+#[allow(dead_code)]
 pub struct TestUnknownRoleRequest {}
 
 impl TestCase for TestUnknownRoleRequest {

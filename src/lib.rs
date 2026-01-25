@@ -675,7 +675,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// });
 	/// # } }
 	/// ```
-	pub fn params_iter(&self) -> Option<Box<ParamsIterator>> {
+	pub fn params_iter(&'_ self) -> Option<Box<ParamsIterator<'_>>> {
 		if self.params_done {
 			Some(Box::new(self.params.iter().map(|v| {
 				(v.0.as_str(), &v.1[..])
@@ -713,7 +713,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// });
 	/// # } }
 	/// ```
-	pub fn str_params_iter(&self) -> Option<Box<StrParamsIterator>> {
+	pub fn str_params_iter(&'_ self) -> Option<Box<StrParamsIterator<'_>>> {
 		if self.params_done {
 			Some(Box::new(self.params.iter().map(|v| {
 				(v.0.as_str(), std::str::from_utf8(v.1).ok())
@@ -862,7 +862,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// });
 	/// # } }
 	/// ```
-	pub fn get_stdin(&self) -> OwnedInStream {
+	pub fn get_stdin(&'_ self) -> OwnedInStream<'_> {
 		self.stdin.try_lock().expect(ERR_LOCK_FAILED)
 	}
 
@@ -893,7 +893,7 @@ impl <W: AsyncWrite + Unpin> Request<W> {
 	/// });
 	/// # } }
 	/// ```
-	pub fn get_data(&self) -> OwnedInStream {
+	pub fn get_data(&'_ self) -> OwnedInStream<'_> {
 		self.data.try_lock().expect(ERR_LOCK_FAILED)
 	}
 
